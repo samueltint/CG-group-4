@@ -1,0 +1,42 @@
+canvas {
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  font-family: Monospace;
+  margin: 0px;
+  overflow: hidden;
+}
+
+#ui {
+  position: absolute;
+  width: 15%;
+  top: 10px;
+  left: 10px;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 10px;
+  color: white;
+  border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+label {
+  margin-top: 10px;
+}
+
+.numInput {
+  width: 50px;
+}
+
+.checkbox {
+  align-self: self-start;
+}
+
+.checkboxContainer {
+  flex-direction: row;
+  padding: 5px;
+  align-items: center;
+}

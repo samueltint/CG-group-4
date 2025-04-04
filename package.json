@@ -1,0 +1,22 @@
+{
+    "name": "CGLabs",
+    "version": "1.0.0",
+    "description": "",
+    "main": "bounce.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "@types/three": "^0.125.3",
+        "CGLabs": "file:",
+        "simplex-noise": "^4.0.3",
+        "three": "^0.174.0",
+        "three-mtl-loader": "^1.0.2"
+    },
+    "devDependencies": {
+        "vite": "^6.2.1"
+    }
+}
