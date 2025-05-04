@@ -1,5 +1,5 @@
 # Install packages
-npm i
+``npm i``
 
 # Run locally
-npx vite
+``npx vite``

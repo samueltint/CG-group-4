@@ -9,6 +9,31 @@
   </head>
 
   <body>
+    <div id="ui">
+      <label>Press 'Space' to Place a Building</label>
+      <label>Press 'R' to Rotate</label>
+      <div
+        style="
+          display: grid;
+          grid-template-columns: max-content max-content;
+          gap: 10px;
+        "
+      >
+        <label for="gridToggle">Show Guides</label>
+        <input type="checkbox" id="gridToggle" checked />
+      </div>
+      <label style="margin-bottom: -5px">Building Type</label>
+      <div
+        id="building_selector"
+        style="
+          display: grid;
+          grid-template-columns: max-content max-content;
+          gap: 4px;
+          padding-left: 10px;
+        "
+      ></div>
+    </div>
+
     <script type="module" src="./main.js"></script>
   </body>
 </html>

@@ -20,23 +20,18 @@ body {
   border-radius: 5px;
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 10px;
 }
 
-label {
-  margin-top: 10px;
+input[type='radio']{
+    margin:0;
 }
 
-.numInput {
-  width: 50px;
+input[type='checkbox']{
+  margin:0;
 }
 
-.checkbox {
-  align-self: self-start;
-}
-
-.checkboxContainer {
-  flex-direction: row;
-  padding: 5px;
-  align-items: center;
+input[type='radio'], label{   
+   display:inline;
+   vertical-align:top;
 }
