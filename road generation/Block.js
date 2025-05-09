@@ -48,13 +48,14 @@ class Block {
   }
 
   splitHorizontally(minSideLength, roadWidth) {
+    const halfRoadWidth = roadWidth / 2;
     const midpoint = this.h / 2;
     const range = this.h - minSideLength * 2;
     const offset = randomRange(-range * 0.25, range * 0.25);
     const h1 = Math.floor(midpoint + offset);
 
-    const b1 = new Block(this.x, this.y, this.w, h1);
-    const b2 = new Block(this.x, this.y + h1, this.w, this.h - h1);
+    const b1 = new Block(this.x, this.y, this.w, h1 - halfRoadWidth);
+    const b2 = new Block(this.x, this.y + h1 + halfRoadWidth, this.w, this.h - h1 - halfRoadWidth);
 
     const blockResult = (b1 && b2) ? [b1, b2] : [this];
     const road = new Road(this.x, this.y + h1, this.x + this.w, this.y + h1, roadWidth);
@@ -63,13 +64,14 @@ class Block {
   }
 
   splitVertically(minSideLength, roadWidth) {
+    const halfRoadWidth = roadWidth / 2;
     const midpoint = this.w / 2;
     const range = this.w - minSideLength * 2;
     const offset = randomRange(-range * 0.25, range * 0.25);
     const w1 = Math.floor(midpoint + offset);
 
-    const b1 = new Block(this.x, this.y, w1, this.h);
-    const b2 = new Block(this.x + w1, this.y, this.w - w1, this.h);
+    const b1 = new Block(this.x, this.y, w1 - halfRoadWidth, this.h);
+    const b2 = new Block(this.x + w1 + halfRoadWidth, this.y, this.w - w1 - halfRoadWidth, this.h);
 
     const blockResult = b1 && b2 ? [b1, b2] : [this];
     const road = new Road(this.x + w1, this.y, this.x + w1, this.y + this.h, roadWidth);

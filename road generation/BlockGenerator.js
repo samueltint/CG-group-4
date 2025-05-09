@@ -10,7 +10,7 @@ class BlockGenerator {
   minSideLength = 5;
   maxSideLength = 10;
   maxAspectRatio = 2;
-  maxDepth = 3;
+  maxDepth = 5;
   startRoadWidth = 6;
   minRoadWidth = 2;
 
@@ -35,9 +35,8 @@ class BlockGenerator {
 
       for (const block of blocks) {
         let blockResult, road;
-        if (block.isFinalSize(this.minSideLength, this.maxSideLength, this.maxAspectRatio)) {
-          console.log("block finished\n x: %f, y: %f, w: %f, h: %f, ratio: %f", this.x, this.y, this.w, this.h, Math.max(this.w / this.h, this.h / this.w))
-        } else {
+        if (!block.isFinalSize(this.minSideLength, this.maxSideLength, this.maxAspectRatio)) {
+
           let roadWidth = Math.max(this.startRoadWidth - 2 * iteration, this.minRoadWidth);
           ({ blockResult, road } = block.Split(this.minSideLength, roadWidth));
           newBlocks.push(...blockResult);
@@ -63,46 +62,49 @@ class BlockGenerator {
       const geometry = new THREE.BoxGeometry(block.w, 0, block.h);
       const material = new THREE.MeshBasicMaterial({
         color: 0xff0000,
-        transparent: true,
-        wireframe: true
       });
       const blockObj = new THREE.Mesh(geometry, material);
 
       blockObj.position.set(
-        block.x + block.w / 2 - mapSize / 2 + .5,
-        0.5,
-        block.y + block.h / 2 - mapSize / 2 + .5
+        block.x + block.w / 2 - mapSize / 2,
+        0,
+        block.y + block.h / 2 - mapSize / 2
       );
 
       this.helpers.add(blockObj)
     })
+
+    const axes = new THREE.AxesHelper(5);
+    axes.translateY(1.5)
+    this.helpers.add(axes)
+
   }
 
   PlaceRoadHelpers(mapSize) {
     this.roads.forEach((road) => {
       const width = road.width;
 
-      const x1 = road.x1 - mapSize / 2 + 0.5;
-      const y1 = road.y1 - mapSize / 2 + 0.5;
-      const x2 = road.x2 - mapSize / 2 + 0.5;
-      const y2 = road.y2 - mapSize / 2 + 0.5;
-  
+      const x1 = road.x1 - mapSize / 2;
+      const y1 = road.y1 - mapSize / 2;
+      const x2 = road.x2 - mapSize / 2;
+      const y2 = road.y2 - mapSize / 2;
+
       const isHorizontal = y1 === y2;
       const length = isHorizontal ? Math.abs(x2 - x1) : Math.abs(y2 - y1);
-  
+
       // BoxGeometry: width (X), height (Y), depth (Z)
       const geometry = isHorizontal
         ? new THREE.BoxGeometry(length, 0.1, width)
         : new THREE.BoxGeometry(width, 0.1, length);
-  
+
       const material = new THREE.MeshBasicMaterial({ color: 0x0000ff });
       const roadObj = new THREE.Mesh(geometry, material);
-  
+
       roadObj.position.set((x1 + x2) / 2, 0.05, (y1 + y2) / 2);
       this.helpers.add(roadObj);
     });
   }
-  
+
 
   getHelpers() { return this.helpers }
 }
