@@ -24,21 +24,21 @@ class Block {
     );
   }
 
-  Split(minSideLength) {
+  Split(minSideLength, roadWidth) {
     let blockResult, road;
     const canSplitHorizontally = this.h > minSideLength * 2;
     const canSplitVertically = this.w > minSideLength * 2;
 
     if (canSplitHorizontally && canSplitVertically) {
       if (this.w > this.h) {
-        ({ blockResult, road } = this.splitVertically(minSideLength));
+        ({ blockResult, road } = this.splitVertically(minSideLength, roadWidth));
       } else {
-        ({ blockResult, road } = this.splitHorizontally(minSideLength));
+        ({ blockResult, road } = this.splitHorizontally(minSideLength, roadWidth));
       }
     } else if (canSplitHorizontally) {
-      ({ blockResult, road } = this.splitHorizontally(minSideLength));
+      ({ blockResult, road } = this.splitHorizontally(minSideLength, roadWidth));
     } else if (canSplitVertically) {
-      ({ blockResult, road } = this.splitVertically(minSideLength));
+      ({ blockResult, road } = this.splitVertically(minSideLength, roadWidth));
     } else {
       blockResult = [this];
       road = undefined;
@@ -47,7 +47,7 @@ class Block {
     return { blockResult, road };
   }
 
-  splitHorizontally(minSideLength) {
+  splitHorizontally(minSideLength, roadWidth) {
     const midpoint = this.h / 2;
     const range = this.h - minSideLength * 2;
     const offset = randomRange(-range * 0.25, range * 0.25);
@@ -57,12 +57,12 @@ class Block {
     const b2 = new Block(this.x, this.y + h1, this.w, this.h - h1);
 
     const blockResult = (b1 && b2) ? [b1, b2] : [this];
-    const road = new Road(this.x, this.y + h1, this.x + this.w, this.y + h1);
+    const road = new Road(this.x, this.y + h1, this.x + this.w, this.y + h1, roadWidth);
 
     return { blockResult, road };
   }
 
-  splitVertically(minSideLength) {
+  splitVertically(minSideLength, roadWidth) {
     const midpoint = this.w / 2;
     const range = this.w - minSideLength * 2;
     const offset = randomRange(-range * 0.25, range * 0.25);
@@ -72,7 +72,7 @@ class Block {
     const b2 = new Block(this.x + w1, this.y, this.w - w1, this.h);
 
     const blockResult = b1 && b2 ? [b1, b2] : [this];
-    const road = new Road(this.x + w1, this.y, this.x + w1, this.y + this.h);
+    const road = new Road(this.x + w1, this.y, this.x + w1, this.y + this.h, roadWidth);
 
     return { blockResult, road };
   }

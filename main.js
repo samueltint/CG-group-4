@@ -22,7 +22,7 @@ const cellMarkers = [];
 var showGrid = true;
 var rotation = 0;
 
-var mapSize = 75;
+var mapSize = 100;
 const gridSize = 1;
 const gridWidth = mapSize / gridSize;
 const grid = new Array(gridWidth)
