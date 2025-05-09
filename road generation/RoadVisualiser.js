@@ -1,17 +1,27 @@
-import Agent from "./agent";
+import Agent from "./Block";
 import { LSystemGenerator } from "./LSystemGenerator";
 import * as THREE from 'three';
+import Rule from "./Rule";
 
 class RoadVisualiser {
-  lsystem = new LSystemGenerator();
+  lsystem = new LSystemGenerator([new Rule(
+    'F',
+    [
+      '[+F]F[-F]',
+      '[-F]F[+F]',
+      '[+F][-F]',
+    ], true
+  )
+  ], 'F');
   positions = [];
-  length = 16;
-  lengthDecay = 2;
+  length = 32;
+  lengthDecay = 4;
+  minLength = 4;
   angle = 90;
   arrows = new THREE.Object3D();
 
 
-  VisualiseSequence() {
+  VisualiseSequence(mapSize) {
     const sequence = this.lsystem.GenerateSentence();
     const saveStates = [];
     let currentPosition = new THREE.Vector3(0, .5, 0);
@@ -40,7 +50,7 @@ class RoadVisualiser {
 
           this.PlaceRoadHelper(tempPosition, direction, this.length);
           this.length -= this.lengthDecay;
-          this.length = Math.max(this.length, 1)
+          this.length = Math.max(this.length, this.minLength)
           break;
         }
         case EncodingLetters.turnRight: {

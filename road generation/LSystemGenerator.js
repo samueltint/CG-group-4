@@ -1,17 +1,13 @@
-import Rule from "./rule";
+import { randFloat } from "three/src/math/MathUtils.js";
 
 class LSystemGenerator {
-  rules = [new Rule(
-    'F',
-    [
-      '[+F]F[-F]',
-      '[+F][-F]',
-      '[-F]F',
-    ], true
-  )
-  ]
-  rootSentence = 'F';
+
+  constructor(rules = [], rootSentence = '[]') {
+    this.rules = rules;
+    this.rootSentence = rootSentence;
+  }
   iterationLimit = 3;
+  ignoreRuleChance = 0.3;
 
   GenerateSentence(word = null) {
     if (!word) {
@@ -29,6 +25,7 @@ class LSystemGenerator {
 
     let newWord = '';
     for (const c of word) {
+      if (iteration > 1 && randFloat() < this.ignoreRuleChance) { return }
       newWord += this.ProcessRulesRecursively(c, iteration);
     }
 

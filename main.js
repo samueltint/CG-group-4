@@ -3,6 +3,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import * as THREE from "three";
 import buildings from "./buildings";
 import RoadVisualiser from "./road generation/roadVisualiser";
+import BlockVisualiser from "./road generation/BlockVisualiser";
 
 var scene;
 var camera;
@@ -79,9 +80,8 @@ async function init() {
   // floor = createFloor();
   // scene.add(floor);
 
-  gridHelper = new THREE.GridHelper(mapSize, mapSize / gridSize, 0, 0x404040);
+  gridHelper = new THREE.GridHelper(mapSize, mapSize / gridSize, 0, 0x808080);
   gridHelper.position.set(gridSize / 2, 0.3, gridSize / 2);
-  gridHelper.visible = false;
   scene.add(gridHelper);
 
   // ghost building to help placement
@@ -103,9 +103,8 @@ async function init() {
 
   controls = new OrbitControls(camera, renderer.domElement);
 
-  const roadMap = new RoadVisualiser();
-  roadMap.VisualiseSequence();
-  console.log(roadMap.getArrows().children.length)
+  const roadMap = new BlockVisualiser();
+  roadMap.VisualiseSequence(mapSize);
   scene.add(roadMap.getArrows())
 
   initUI();
