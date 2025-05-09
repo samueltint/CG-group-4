@@ -2,8 +2,7 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import * as THREE from "three";
 import buildings from "./buildings";
-import RoadVisualiser from "./road generation/roadVisualiser";
-import BlockVisualiser from "./road generation/BlockVisualiser";
+import BlockGenerator from "./road generation/BlockGenerator";
 
 var scene;
 var camera;
@@ -103,9 +102,9 @@ async function init() {
 
   controls = new OrbitControls(camera, renderer.domElement);
 
-  const roadMap = new BlockVisualiser();
+  const roadMap = new BlockGenerator();
   roadMap.VisualiseSequence(mapSize);
-  scene.add(roadMap.getArrows())
+  scene.add(roadMap.getHelpers())
 
   initUI();
   window.addEventListener("resize", resizeScene);

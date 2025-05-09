@@ -1,4 +1,4 @@
-import * as THREE from "three";
+import Road from "./Road";
 
 class Block {
   constructor(x, y, w, h) {
@@ -25,47 +25,58 @@ class Block {
   }
 
   Split(minSideLength) {
+    let blockResult, road;
     const canSplitHorizontally = this.h > minSideLength * 2;
     const canSplitVertically = this.w > minSideLength * 2;
 
     if (canSplitHorizontally && canSplitVertically) {
       if (this.w > this.h) {
-        return this.splitVertically(minSideLength);
+        ({ blockResult, road } = this.splitVertically(minSideLength));
       } else {
-        return this.splitHorizontally(minSideLength);
+        ({ blockResult, road } = this.splitHorizontally(minSideLength));
       }
     } else if (canSplitHorizontally) {
-      return this.splitHorizontally(minSideLength);
+      ({ blockResult, road } = this.splitHorizontally(minSideLength));
     } else if (canSplitVertically) {
-      return this.splitVertically(minSideLength);
+      ({ blockResult, road } = this.splitVertically(minSideLength));
     } else {
-      return [this];
+      blockResult = [this];
+      road = undefined;
     }
+
+    return { blockResult, road };
   }
 
   splitHorizontally(minSideLength) {
     const midpoint = this.h / 2;
     const range = this.h - minSideLength * 2;
-    const offset = randomRange(-range * 0.25, range * 0.25); 
+    const offset = randomRange(-range * 0.25, range * 0.25);
     const h1 = Math.floor(midpoint + offset);
 
     const b1 = new Block(this.x, this.y, this.w, h1);
     const b2 = new Block(this.x, this.y + h1, this.w, this.h - h1);
 
-    return b1 && b2 ? [b1, b2] : [this];
+    const blockResult = (b1 && b2) ? [b1, b2] : [this];
+    const road = new Road(this.x, this.y + h1, this.x + this.w, this.y + h1);
+
+    return { blockResult, road };
   }
 
   splitVertically(minSideLength) {
     const midpoint = this.w / 2;
     const range = this.w - minSideLength * 2;
-    const offset = randomRange(-range * 0.25, range * 0.25); // +/-25% variation
+    const offset = randomRange(-range * 0.25, range * 0.25);
     const w1 = Math.floor(midpoint + offset);
 
     const b1 = new Block(this.x, this.y, w1, this.h);
     const b2 = new Block(this.x + w1, this.y, this.w - w1, this.h);
 
-    return b1 && b2 ? [b1, b2] : [this];
+    const blockResult = b1 && b2 ? [b1, b2] : [this];
+    const road = new Road(this.x + w1, this.y, this.x + w1, this.y + this.h);
+
+    return { blockResult, road };
   }
+
 
 
 }
