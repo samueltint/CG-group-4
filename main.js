@@ -2,6 +2,7 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import * as THREE from "three";
 import buildings from "./buildings";
+import BlockGenerator from "./road generation/BlockGenerator";
 
 var scene;
 var camera;
@@ -21,7 +22,7 @@ const cellMarkers = [];
 var showGrid = true;
 var rotation = 0;
 
-var mapSize = 75;
+var mapSize = 100;
 const gridSize = 1;
 const gridWidth = mapSize / gridSize;
 const grid = new Array(gridWidth)
@@ -49,8 +50,8 @@ async function init() {
   const width = window.innerWidth;
   const height = window.innerHeight;
   camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
-  camera.position.set(40, 20, 10);
-  camera.lookAt(0, 0, 5);
+  camera.position.set(100, 60, 40);
+  camera.lookAt(0, 0, 0);
 
   // async function to load models before allowing interaction
   await loadAllModels();
@@ -75,22 +76,22 @@ async function init() {
   // scene.add(new THREE.DirectionalLightHelper(directionalLight));
 
   // additional objects
-  floor = createFloor();
-  scene.add(floor);
+  // floor = createFloor();
+  // scene.add(floor);
 
-  gridHelper = new THREE.GridHelper(mapSize, mapSize / gridSize, 0, 0x404040);
-  gridHelper.position.set(gridSize / 2, 0.3, gridSize / 2);
+  gridHelper = new THREE.GridHelper(mapSize, mapSize / gridSize, 0, 0x808080);
+  gridHelper.position.set(0, 0.3, 0);
   scene.add(gridHelper);
 
   // ghost building to help placement
-  scene.add(cursor); 
-  const building = buildings[currentBuildingId];
-  cursorBuilding = getBuildingMesh(currentBuildingId, true);
-  cursor.add(cursorBuilding);
-  const geometry = new THREE.BoxGeometry(building.depth, 0.5, building.width);
-  geometry.translate(building.depth / 2, 0, building.width / 2);
-  placementHelper = new THREE.Mesh(geometry, markerMaterial);
-  cursor.add(placementHelper);
+  // scene.add(cursor);
+  // const building = buildings[currentBuildingId];
+  // cursorBuilding = getBuildingMesh(currentBuildingId, true);
+  // cursor.add(cursorBuilding);
+  // const geometry = new THREE.BoxGeometry(building.depth, 0.5, building.width);
+  // geometry.translate(building.depth / 2, 0, building.width / 2);
+  // placementHelper = new THREE.Mesh(geometry, markerMaterial);
+  // cursor.add(placementHelper);
 
   // render settings
   renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -100,6 +101,10 @@ async function init() {
   document.body.appendChild(renderer.domElement);
 
   controls = new OrbitControls(camera, renderer.domElement);
+
+  const roadMap = new BlockGenerator();
+  roadMap.VisualiseSequence(mapSize);
+  scene.add(roadMap.getHelpers())
 
   initUI();
   window.addEventListener("resize", resizeScene);
@@ -157,7 +162,6 @@ function createFloor() {
 
   const geometry = new THREE.PlaneGeometry(mapSize, mapSize, floorSegments, floorSegments);
   geometry.rotateX(-Math.PI / 2);
-  geometry.translate(gridSize / 2, 0, gridSize / 2)
   const material = new THREE.MeshStandardMaterial({
     map: texture,
     normalMap: normalMap,
@@ -188,9 +192,9 @@ function animate() {
 
     renderer.render(scene, camera);
 
-    controls.update();
-    renderer.render(scene, camera);
   }
+  controls.update();
+  renderer.render(scene, camera);
   requestAnimationFrame(animate);
 }
 
