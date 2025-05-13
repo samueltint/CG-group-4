@@ -57,9 +57,12 @@ class Block {
     const b1 = new Block(this.x, this.y, this.w, h1 - halfRoadWidth);
     const b2 = new Block(this.x, this.y + h1 + halfRoadWidth, this.w, this.h - h1 - halfRoadWidth);
 
+    if (b1.h < minSideLength || b2.h < minSideLength) {
+      return { blockResult: [this], road: undefined }; 
+    }
+    
     const blockResult = (b1 && b2) ? [b1, b2] : [this];
     const road = new Road(this.x, this.y + h1, this.x + this.w, this.y + h1, roadWidth);
-
     return { blockResult, road };
   }
 
@@ -72,6 +75,10 @@ class Block {
 
     const b1 = new Block(this.x, this.y, w1 - halfRoadWidth, this.h);
     const b2 = new Block(this.x + w1 + halfRoadWidth, this.y, this.w - w1 - halfRoadWidth, this.h);
+
+    if (b1.w < minSideLength || b2.w < minSideLength) {
+      return { blockResult: [this], road: undefined }; 
+    }
 
     const blockResult = b1 && b2 ? [b1, b2] : [this];
     const road = new Road(this.x + w1, this.y, this.x + w1, this.y + this.h, roadWidth);
