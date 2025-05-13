@@ -11,16 +11,16 @@ class BlockGenerator {
   minSideLength = 5;
   maxSideLength = 10;
   maxAspectRatio = 2;
-  maxDepth = 5;
-  startRoadWidth = 6;
-  minRoadWidth = 2;
+  maxDepth = 100;
+  startRoadWidth = 8;
+  minRoadWidth = 0;
 
   VisualiseSequence(mapSize) {
     const rootBlock = new Block(0, 0, mapSize, mapSize);
     const { blocks, roads } = this.GenerateBlocks(rootBlock);
     this.blocks = blocks;
     this.roads = roads;
-    this.PlaceBlockHelpers(mapSize)
+    this.PlaceHelpers(mapSize)
     this.PlaceRoadHelpers(mapSize)
   }
 
@@ -36,39 +36,37 @@ class BlockGenerator {
 
       for (const block of blocks) {
         let blockResult, road;
-        if (!block.isFinalSize(this.minSideLength, this.maxSideLength, this.maxAspectRatio)) {
+        let roadWidth = Math.max(this.startRoadWidth - iteration, this.minRoadWidth);
 
-          let roadWidth = Math.max(this.startRoadWidth - 2 * iteration, this.minRoadWidth);
+        if (!block.isFinalSize(this.minSideLength, this.maxSideLength, this.maxAspectRatio)) {
           ({ blockResult, road } = block.Split(this.minSideLength, roadWidth));
           newBlocks.push(...blockResult);
           if (road) {
             roads.push(road);
           }
           finished = false;
+        } else {
+          newBlocks.push(block);
         }
 
       }
-
+      //       console.log("blocks: ", blocks)
+      // console.log("roads: ", roads)
       blocks = newBlocks;
-      console.log("blocks: ", blocks)
-      console.log("roads: ", roads)
       iteration++;
     }
 
     return { blocks, roads };
   }
 
-  //customisable paramaters
-
-
-  PlaceBlockHelpers(mapSize) {
+  PlaceHelpers(mapSize) {
     this.blocks.forEach((block) => {
       const geometry = new THREE.BoxGeometry(block.w, 0.7, block.h);
-      const material = new THREE.MeshBasicMaterial({
-        color: 0xff0000,
+      const material = new THREE.MeshPhongMaterial({
+        color: 0x4A4545,
       });
       const blockObj = new THREE.Mesh(geometry, material);
-      
+
       var xCoord = block.x + block.w / 2 - mapSize / 2;
       var zCoord = block.y + block.h / 2 - mapSize / 2;
       blockObj.position.set(
@@ -76,17 +74,13 @@ class BlockGenerator {
         0,
         zCoord
       );
-      var towers = BuildingGenerator(block.w, block.h, xCoord,zCoord)
+      blockObj.receiveShadow = true;
       this.helpers.add(blockObj);
-      this.helpers.add(towers);
+
+      var building = BuildingGenerator(block.w, block.h, xCoord, zCoord)
+      this.helpers.add(building);
     });
 
-    const axes = new THREE.AxesHelper(5);
-    axes.translateY(1.5);
-    this.helpers.add(axes);
-  }
-
-  PlaceRoadHelpers(mapSize) {
     this.roads.forEach((road) => {
       const width = road.width;
 
@@ -100,15 +94,22 @@ class BlockGenerator {
 
       // BoxGeometry: width (X), height (Y), depth (Z)
       const geometry = isHorizontal
-        ? new THREE.BoxGeometry(length, 0.1, width)
-        : new THREE.BoxGeometry(width, 0.1, length);
+        ? new THREE.BoxGeometry(length, 0.5, width)
+        : new THREE.BoxGeometry(width, 0.5, length);
 
-      const material = new THREE.MeshBasicMaterial({ color: 0x0000ff });
+      const material = new THREE.MeshPhongMaterial({ color: 0x2E2B2B });
       const roadObj = new THREE.Mesh(geometry, material);
-
+      roadObj.receiveShadow = true;
       roadObj.position.set((x1 + x2) / 2, 0.05, (y1 + y2) / 2);
       this.helpers.add(roadObj);
     });
+    const axes = new THREE.AxesHelper(5);
+    axes.translateY(1.5);
+    this.helpers.add(axes);
+  }
+
+  PlaceRoadHelpers(mapSize) {
+
   }
 
 

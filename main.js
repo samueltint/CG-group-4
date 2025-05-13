@@ -22,7 +22,7 @@ const cellMarkers = [];
 var showGrid = true;
 var rotation = 0;
 
-var mapSize = 100;
+var mapSize = 300;
 const gridSize = 1;
 const gridWidth = mapSize / gridSize;
 const grid = new Array(gridWidth)
@@ -58,7 +58,7 @@ async function init() {
 
   // lighting
   directionalLight = new THREE.DirectionalLight(0xfffffc, 3);
-  directionalLight.position.set(200, 200, 200);
+  directionalLight.position.set(200, 200, 50);
   directionalLight.castShadow = true;
   directionalLight.shadow.bias = 0.0001;
   directionalLight.shadow.mapSize.set(8192, 8192);
@@ -81,6 +81,7 @@ async function init() {
 
   gridHelper = new THREE.GridHelper(mapSize, mapSize / gridSize, 0, 0x808080);
   gridHelper.position.set(0, 0.3, 0);
+  gridHelper.visible = false;
   scene.add(gridHelper);
 
   // ghost building to help placement
