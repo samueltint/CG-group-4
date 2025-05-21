@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 import Block from './Block.js';
 import BuildingGenerator from "./BuildingGenerator.js";
+import buildings from './buildings.js';
+import { randInt } from 'three/src/math/MathUtils.js';
 
 class BlockGenerator {
 
@@ -8,10 +10,11 @@ class BlockGenerator {
   roads = [];
   group = new THREE.Group();
 
-  minSideLength = 2;
-  maxAspectRatio = 2;
+  minSideLength = 10;
+  maxAspectRatio = 1.5;
   maxDepth = 50;
   minRoadWidth = 1;
+  randomSkycraperChance = .5;
 
   Generate(mapSize, maxBuildingSideLength, startingRoadWidth, roadWidthDecay) {
     this.group.clear();
@@ -61,25 +64,32 @@ class BlockGenerator {
     return { blocks, roads };
   }
 
+
+
   PlaceObjects(mapSize) {
     this.blocks.forEach((block) => {
       const geometry = new THREE.BoxGeometry(block.w, 0.7, block.h);
-      const material = new THREE.MeshPhongMaterial({
-        color: 0x4A4545,
-      });
+      const material = new THREE.MeshPhongMaterial({ color: 0x4A4545 });
       const blockObj = new THREE.Mesh(geometry, material);
 
-      var xCoord = block.x + block.w / 2 - mapSize / 2;
-      var zCoord = block.y + block.h / 2 - mapSize / 2;
-      blockObj.position.set(
-        xCoord,
-        0,
-        zCoord
-      );
+      const xCoord = block.x + block.w / 2 - mapSize / 2;
+      const zCoord = block.y + block.h / 2 - mapSize / 2;
+      blockObj.position.set(xCoord, 0, zCoord);
       blockObj.receiveShadow = true;
       this.group.add(blockObj);
 
-      var building = BuildingGenerator(block.w, block.h, xCoord, zCoord)
+      const loaded = LoadBuilding(block.w, block.h, xCoord, zCoord, block.roadDir);
+      let building, effectiveWidth, effectiveDepth;
+
+      if (!loaded || Math.random() <= this.randomSkycraperChance) {
+        building = BuildingGenerator(block.w, block.h, xCoord, zCoord);
+        // If BuildingGenerator returns just building mesh, you might need bounding box for it too
+      } else {
+        ({ building, effectiveWidth, effectiveDepth } = loaded);
+        // Now position building at the road side:
+        moveBuilding(block, building, mapSize, effectiveWidth, effectiveDepth);
+      }
+
       this.group.add(building);
     });
 
@@ -112,6 +122,62 @@ class BlockGenerator {
   getGroup() {
     return this.group;
   }
+}
+
+function LoadBuilding(blockW, blockH, x, z, roadDir) {
+  for (const b of buildings) {
+    if (!b.modelData) continue;
+
+    const temp = b.modelData.clone();
+
+    const bbox = new THREE.Box3().setFromObject(temp);
+    const size = new THREE.Vector3();
+    bbox.getSize(size);
+
+    const isRotated = roadDir % 2 === 1;
+    const effectiveWidth = isRotated ? size.z : size.x;
+    const effectiveDepth = isRotated ? size.x : size.z;
+
+    if (blockW >= effectiveWidth && blockH >= effectiveDepth) {
+      const building = temp;
+
+      if (roadDir !== null && roadDir !== undefined) {
+        building.rotateY(roadDir * Math.PI / 2);
+      }
+
+      building.traverse((child) => {
+        if (child.isMesh) {
+          child.castShadow = true;
+          child.receiveShadow = true;
+        }
+      });
+
+      return { building, effectiveWidth, effectiveDepth };
+    }
+  }
+  return null;
+}
+
+function moveBuilding(block, building, mapSize, effectiveWidth, effectiveDepth) {
+  let xCoord = block.x + block.w / 2 - mapSize / 2;
+  let zCoord = block.y + block.h / 2 - mapSize / 2;
+
+  switch (block.roadDir) {
+    case 0:
+      zCoord = block.y - mapSize / 2 + effectiveDepth / 2;
+      break;
+    case 1:
+      xCoord = block.x + block.w - mapSize / 2 - effectiveWidth / 2;
+      break;
+    case 2:
+      zCoord = block.y + block.h - mapSize / 2 - effectiveDepth / 2;
+      break;
+    case 3:
+      xCoord = block.x - mapSize / 2 + effectiveWidth / 2;
+      break;
+  }
+
+  building.position.set(xCoord, 0, zCoord);
 }
 
 export default BlockGenerator;

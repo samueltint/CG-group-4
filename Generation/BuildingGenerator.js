@@ -49,12 +49,12 @@ function createCube(w, h, d, color) {
   return cube;
 }
 
-var minHeight = 10;
-var maxHeight = 30;
+var minHeight = 15;
+var maxHeight = 50;
 var building; // array of buildings
 
 function BuildingGenerator(blockW, blockD, xCoord, zCoord) {
-  const BuildingH = (Math.pow(Math.random(), 3)) * (maxHeight - minHeight) + minHeight;
+  const BuildingH = (Math.pow(Math.random(), 2)) * (maxHeight - minHeight) + minHeight;
 
   building = createCube(blockW, BuildingH, blockD, 0x4d4d4d);
   building.position.set(xCoord, BuildingH / 2, zCoord);

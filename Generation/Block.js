@@ -6,6 +6,8 @@ class Block {
     this.y = y;
     this.w = w;
     this.h = h;
+
+    this.roadDir = null;
   }
 
   isFinalSize(maxBuildingSideLength, maxAspectRatio) {
@@ -15,7 +17,6 @@ class Block {
     return (
       this.w <= maxBuildingSideLength &&
       this.h <= maxBuildingSideLength &&
-
       aspect <= maxAspectRatio &&
       inverseAspect <= maxAspectRatio
     );
@@ -38,7 +39,7 @@ class Block {
       ({ blockResult, road } = this.splitVertically(minSideLength, roadWidth));
     } else {
       blockResult = [this];
-      road = undefined;
+      road = null;
     }
 
     return { blockResult, road };
@@ -55,12 +56,17 @@ class Block {
     const b2 = new Block(this.x, this.y + h1 + halfRoadWidth, this.w, this.h - h1 - halfRoadWidth);
 
     if (b1.h < minSideLength || b2.h < minSideLength) {
-      return { blockResult: [this], road: undefined }; 
+      return { blockResult: [this], road: null };
     }
-    
-    const blockResult = (b1 && b2) ? [b1, b2] : [this];
+
     const road = new Road(this.x, this.y + h1, this.x + this.w, this.y + h1, roadWidth);
-    return { blockResult, road };
+    if (roadWidth > 0) {
+      b1.roadDir = 0;
+      b2.roadDir = 2;
+    } else {
+      b1.roadDir = this.roadDir
+    }
+    return { blockResult: [b1, b2], road };
   }
 
   splitVertically(minSideLength, roadWidth) {
@@ -74,21 +80,22 @@ class Block {
     const b2 = new Block(this.x + w1 + halfRoadWidth, this.y, this.w - w1 - halfRoadWidth, this.h);
 
     if (b1.w < minSideLength || b2.w < minSideLength) {
-      return { blockResult: [this], road: undefined }; 
+      return { blockResult: [this], road: null };
     }
 
-    const blockResult = b1 && b2 ? [b1, b2] : [this];
     const road = new Road(this.x + w1, this.y, this.x + w1, this.y + this.h, roadWidth);
-
-    return { blockResult, road };
+    if (roadWidth > 0) {
+      b1.roadDir = 0;
+      b2.roadDir = 2;
+    } else {
+      b1.roadDir = this.roadDir
+    }
+    return { blockResult: [b1, b2], road };
   }
-
-
-
 }
 
 function randomRange(min, max) {
   return Math.random() * (max - min) + min;
 }
 
-export default Block
+export default Block;

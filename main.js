@@ -1,6 +1,8 @@
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import * as THREE from "three";
 import BlockGenerator from "./Generation/BlockGenerator";
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import buildings from "./Generation/buildings";
 
 var scene;
 var camera;
@@ -31,6 +33,9 @@ async function init() {
   camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
   camera.position.set(100, 60, 40);
   camera.lookAt(0, 0, 0);
+
+  // load models
+  await loadAllModels();
 
   // lighting
   directionalLight = new THREE.DirectionalLight(0xfffffc, 3);
@@ -68,6 +73,32 @@ async function init() {
   window.addEventListener("resize", resizeScene);
   renderer.render(scene, camera);
   animate();
+}
+
+function loadGLTF(path) {
+  const loader = new GLTFLoader();
+  return new Promise((resolve, reject) => {
+    loader.load(
+      path,
+      (gltf) => resolve(gltf),
+      null,
+      (err) => reject(err)
+    );
+  });
+}
+
+async function loadAllModels() {
+  const gltf = await loadGLTF('./models/Buildings/buildings.glb');
+
+  for (const b of buildings) {
+    const mesh = gltf.scene.getObjectByName(b.name);
+    if (!mesh) {
+      console.warn("No mesh named", b.name);
+      b.modelData = null;
+    } else {
+      b.modelData = mesh.clone(); // Clone to avoid sharing references if reused
+    }
+  }
 }
 
 function animate() {
