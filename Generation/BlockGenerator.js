@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import Block from './Block.js';
 import BuildingGenerator from "./BuildingGenerator.js";
-import buildings from './Buildings.js';
+import buildings from './buildings.js';
 import { randInt } from 'three/src/math/MathUtils.js';
 
 const textureLoader = new THREE.TextureLoader();
@@ -14,7 +14,7 @@ class BlockGenerator {
 
   blocks = [];
   roads = [];
-  group = new THREE.Group();s
+  group = new THREE.Group();
 
   minSideLength = 10;
   maxAspectRatio = 1.5;
