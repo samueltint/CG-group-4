@@ -85,8 +85,8 @@ class Block {
 
     const road = new Road(this.x + w1, this.y, this.x + w1, this.y + this.h, roadWidth);
     if (roadWidth > 0) {
-      b1.roadDir = 0;
-      b2.roadDir = 2;
+      b1.roadDir = 1;
+      b2.roadDir = 3;
     } else {
       b1.roadDir = this.roadDir
     }

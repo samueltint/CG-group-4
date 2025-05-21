@@ -17,6 +17,8 @@ let currentRoadMapMesh = null;
 var maxBuildingSideLength = 10;
 var startingRoadWidth = 10;
 var roadWidthDecay = 1;
+var skyscraperHeight = 30
+var skyscraperChance = .3
 
 init();
 
@@ -66,7 +68,7 @@ async function init() {
   controls = new OrbitControls(camera, renderer.domElement);
 
   const roadMap = new BlockGenerator();
-  roadMap.Generate(mapSize, maxBuildingSideLength, startingRoadWidth, roadWidthDecay);
+  roadMap.Generate(mapSize, maxBuildingSideLength, startingRoadWidth, roadWidthDecay, skyscraperChance, skyscraperHeight);
   currentRoadMapMesh = roadMap.getGroup();
   scene.add(currentRoadMapMesh);
 
@@ -120,6 +122,8 @@ async function initUI() {
   const buildingSizeInput = document.getElementById("buildingSizeInput");
   const roadSizeInput = document.getElementById("roadSizeInput");
   const roadSizeDecayInput = document.getElementById("roadSizeDecayInput");
+  const skyscraperHeightInput = document.getElementById("skyscraperHeightInput");
+  const skyscraperChanceInput = document.getElementById("skyscraperChanceInput");
   const generateBtn = document.getElementById("generateBtn");
 
   buildingSizeInput.addEventListener("input", (event) => {
@@ -132,6 +136,14 @@ async function initUI() {
 
   roadSizeDecayInput.addEventListener("input", (event) => {
     roadWidthDecay = parseInt(event.target.value);
+  });
+
+  skyscraperChanceInput.addEventListener("input", (event) => {
+    skyscraperChance = parseInt(event.target.value) / 100;
+  });
+
+  skyscraperHeightInput.addEventListener("input", (event) => {
+    skyscraperHeight = parseInt(event.target.value);
   });
 
   generateBtn.addEventListener("click", () => {
@@ -148,10 +160,11 @@ async function initUI() {
           }
         }
       });
-    }
 
+    }
+    console.log(skyscraperChance)
     const roadMap = new BlockGenerator();
-    roadMap.Generate(mapSize, maxBuildingSideLength, startingRoadWidth, roadWidthDecay);
+    roadMap.Generate(mapSize, maxBuildingSideLength, startingRoadWidth, roadWidthDecay, skyscraperChance, skyscraperHeight);
     currentRoadMapMesh = roadMap.getGroup();
     scene.add(currentRoadMapMesh);
   });

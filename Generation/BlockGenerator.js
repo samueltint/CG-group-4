@@ -14,9 +14,8 @@ class BlockGenerator {
   maxAspectRatio = 1.5;
   maxDepth = 50;
   minRoadWidth = 1;
-  randomSkycraperChance = .5;
 
-  Generate(mapSize, maxBuildingSideLength, startingRoadWidth, roadWidthDecay) {
+  Generate(mapSize, maxBuildingSideLength, startingRoadWidth, roadWidthDecay, skyscraperChance, skyscraperHeight) {
     this.group.clear();
     this.blocks = [];
     this.roads = [];
@@ -25,7 +24,7 @@ class BlockGenerator {
     const { blocks, roads } = this.GenerateBlocks(rootBlock, maxBuildingSideLength, startingRoadWidth, roadWidthDecay);
     this.blocks = blocks;
     this.roads = roads;
-    this.PlaceObjects(mapSize)
+    this.PlaceObjects(mapSize, skyscraperChance, skyscraperHeight)
   }
 
   GenerateBlocks(initialBlock, maxBuildingSideLength, startingRoadWidth, roadWidthDecay) {
@@ -66,23 +65,24 @@ class BlockGenerator {
 
 
 
-  PlaceObjects(mapSize) {
+  PlaceObjects(mapSize, skyscraperChance, skyscraperHeight) {
     this.blocks.forEach((block) => {
-      const geometry = new THREE.BoxGeometry(block.w, 0.7, block.h);
+      const geometry = new THREE.BoxGeometry(block.w, 1, block.h);
       const material = new THREE.MeshPhongMaterial({ color: 0x4A4545 });
       const blockObj = new THREE.Mesh(geometry, material);
 
       const xCoord = block.x + block.w / 2 - mapSize / 2;
       const zCoord = block.y + block.h / 2 - mapSize / 2;
       blockObj.position.set(xCoord, 0, zCoord);
+      blockObj.castShadow = true;
       blockObj.receiveShadow = true;
       this.group.add(blockObj);
 
       const loaded = LoadBuilding(block.w, block.h, xCoord, zCoord, block.roadDir);
       let building, effectiveWidth, effectiveDepth;
 
-      if (!loaded || Math.random() <= this.randomSkycraperChance) {
-        building = BuildingGenerator(block.w, block.h, xCoord, zCoord);
+      if (!loaded || Math.random() <= skyscraperChance) {
+        building = BuildingGenerator(block.w, block.h, xCoord, zCoord, skyscraperHeight);
         // If BuildingGenerator returns just building mesh, you might need bounding box for it too
       } else {
         ({ building, effectiveWidth, effectiveDepth } = loaded);
@@ -126,7 +126,7 @@ class BlockGenerator {
 
 function LoadBuilding(blockW, blockH, x, z, roadDir) {
   for (const b of buildings) {
-    if (!b.modelData) continue;
+    if (!b.modelData || Math.random < .1) continue;
 
     const temp = b.modelData.clone();
 
