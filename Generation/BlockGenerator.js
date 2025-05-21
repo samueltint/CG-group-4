@@ -1,14 +1,20 @@
 import * as THREE from 'three';
 import Block from './Block.js';
 import BuildingGenerator from "./BuildingGenerator.js";
-import buildings from './buildings.js';
+import buildings from './Buildings.js';
 import { randInt } from 'three/src/math/MathUtils.js';
+
+const textureLoader = new THREE.TextureLoader();
+ const roadTexture = textureLoader.load('./textures/roadimg.jpg');
+ const roadTexture2 = textureLoader.load('./textures/roadimg2.jpg');
+ roadTexture.wrapS = roadTexture.wrapT = THREE.RepeatWrapping;
+ roadTexture2.wrapS = roadTexture2.wrapT = THREE.RepeatWrapping;
 
 class BlockGenerator {
 
   blocks = [];
   roads = [];
-  group = new THREE.Group();
+  group = new THREE.Group();s
 
   minSideLength = 10;
   maxAspectRatio = 1.5;
@@ -109,10 +115,15 @@ class BlockGenerator {
         ? new THREE.BoxGeometry(length, 0.5, width)
         : new THREE.BoxGeometry(width, 0.5, length);
 
-      const material = new THREE.MeshPhongMaterial({ color: 0x2E2B2B });
+      roadTexture.repeat.set(y2/4, 1);
+      const material = new THREE.MeshPhongMaterial({ map: roadTexture2 });
       const roadObj = new THREE.Mesh(geometry, material);
       roadObj.receiveShadow = true;
       roadObj.position.set((x1 + x2) / 2, 0.05, (y1 + y2) / 2);
+      if(isHorizontal){
+        roadTexture2.repeat.set(1, y1/4);
+        roadObj.material.map = roadTexture;
+      }
       this.group.add(roadObj);
     });
 
