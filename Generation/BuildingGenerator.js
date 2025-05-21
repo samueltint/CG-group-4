@@ -3,21 +3,39 @@ import * as THREE from "three";
 
 // load textures
 const textureLoader = new THREE.TextureLoader();
-const buildingTexture = textureLoader.load('./textures/images.jpg');
+const buildingTexture = textureLoader.load('./textures/image.jpg');
 buildingTexture.wrapS = buildingTexture.wrapT = THREE.RepeatWrapping;
-buildingTexture.repeat.set(1, 1);
+buildingTexture.repeat.set(0.8, 0.1);
 const buildingGap = 1;
 
+function getRandomColor() {
+    const baseColors = [
+        new THREE.Color(0x687b8e), // main cool gray-blue
+        new THREE.Color(0x596973), // darker muted blue-gray
+        new THREE.Color(0x7a8c9f), // lighter steel blue
+        new THREE.Color(0x8f9ba8), // pale blue-gray
+        new THREE.Color(0x566570), // deep gray-blue
+    ];
+    const base = baseColors[Math.floor(Math.random() * baseColors.length)];
+    const variation = 0.05;
+
+    return new THREE.Color(
+        Math.min(1, Math.max(0, base.r + (Math.random() - 0.5) * variation)),
+        Math.min(1, Math.max(0, base.g + (Math.random() - 0.5) * variation)),
+        Math.min(1, Math.max(0, base.b + (Math.random() - 0.5) * variation))
+    );
+}
 
 function createCube(w, h, d, color) {
+  const randomColor = getRandomColor();
   const texturedMaterial = new THREE.MeshPhongMaterial({
     map: buildingTexture,
-    color: new THREE.Color(color),
+    color: randomColor,
     wireframe: false,
   });
 
   const plainMaterial = new THREE.MeshPhongMaterial({
-    color: new THREE.Color(color),
+    color: randomColor,
     wireframe: false,
   });
 
@@ -56,7 +74,7 @@ var building; // array of buildings
 function BuildingGenerator(blockW, blockD, xCoord, zCoord) {
   const BuildingH = (Math.pow(Math.random(), 2)) * (maxHeight - minHeight) + minHeight;
 
-  building = createCube(blockW, BuildingH, blockD, 0x4d4d4d);
+  building = createCube(blockW, BuildingH, blockD);
   building.position.set(xCoord, BuildingH / 2, zCoord);
   return building;
 }
