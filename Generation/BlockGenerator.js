@@ -5,10 +5,15 @@ import buildings from './buildings.js';
 import { randInt } from 'three/src/math/MathUtils.js';
 
 const textureLoader = new THREE.TextureLoader();
- const roadTexture = textureLoader.load('./textures/roadimg.jpg');
- const roadTexture2 = textureLoader.load('./textures/roadimg2.jpg');
- roadTexture.wrapS = roadTexture.wrapT = THREE.RepeatWrapping;
- roadTexture2.wrapS = roadTexture2.wrapT = THREE.RepeatWrapping;
+const largeRoadTexture = textureLoader.load('./textures/road/largeRoad.jpg');
+const smallRoadTexture = textureLoader.load('./textures/road/smallRoad.jpg');
+const asphaltTexture = textureLoader.load('./textures/road/asphalt.jpg');
+[largeRoadTexture, smallRoadTexture, asphaltTexture].forEach(tex => {
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+});
+const largeRoadMaterial = new THREE.MeshPhongMaterial({ map: largeRoadTexture, wireframe: false });
+const smallRoadMaterial = new THREE.MeshPhongMaterial({ map: smallRoadTexture, wireframe: false });
+const asphaltMaterial = new THREE.MeshPhongMaterial({ map: asphaltTexture, wireframe: false });
 
 class BlockGenerator {
 
@@ -18,7 +23,7 @@ class BlockGenerator {
 
   minSideLength = 10;
   maxAspectRatio = 1.5;
-  maxDepth = 50;
+  maxDepth = 30;
   minRoadWidth = 1;
 
   Generate(mapSize, maxBuildingSideLength, startingRoadWidth, roadWidthDecay, skyscraperChance, skyscraperHeight) {
@@ -69,8 +74,6 @@ class BlockGenerator {
     return { blocks, roads };
   }
 
-
-
   PlaceObjects(mapSize, skyscraperChance, skyscraperHeight) {
     this.blocks.forEach((block) => {
       const geometry = new THREE.BoxGeometry(block.w, 1, block.h);
@@ -89,10 +92,8 @@ class BlockGenerator {
 
       if (!loaded || Math.random() <= skyscraperChance) {
         building = BuildingGenerator(block.w, block.h, xCoord, zCoord, skyscraperHeight);
-        // If BuildingGenerator returns just building mesh, you might need bounding box for it too
       } else {
         ({ building, effectiveWidth, effectiveDepth } = loaded);
-        // Now position building at the road side:
         moveBuilding(block, building, mapSize, effectiveWidth, effectiveDepth);
       }
 
@@ -102,31 +103,46 @@ class BlockGenerator {
     this.roads.forEach((road) => {
       const width = road.width;
 
-      const x1 = road.x1 - mapSize / 2;
-      const y1 = road.y1 - mapSize / 2;
-      const x2 = road.x2 - mapSize / 2;
-      const y2 = road.y2 - mapSize / 2;
+      if (width > 0) {
+        const x1 = road.x1 - mapSize / 2;
+        const y1 = road.y1 - mapSize / 2;
+        const x2 = road.x2 - mapSize / 2;
+        const y2 = road.y2 - mapSize / 2;
 
-      const isHorizontal = y1 === y2;
-      const length = isHorizontal ? Math.abs(x2 - x1) : Math.abs(y2 - y1);
+        const isHorizontal = y1 === y2;
+        const length = isHorizontal ? Math.abs(x2 - x1) : Math.abs(y2 - y1);
 
-      // BoxGeometry: width (X), height (Y), depth (Z)
-      const geometry = isHorizontal
-        ? new THREE.BoxGeometry(length, 0.5, width)
-        : new THREE.BoxGeometry(width, 0.5, length);
+        let geometry;
+        var material;
+        if (width <= 4) {
+          material = asphaltMaterial.clone();
+          material.map = asphaltMaterial.map.clone();
+        } else if (width <= 6) {
+          material = smallRoadMaterial.clone();
+          material.map = smallRoadMaterial.map.clone();
+        } else {
+          material = largeRoadMaterial.clone();
+          material.map = largeRoadMaterial.map.clone();
+        }
 
-      roadTexture.repeat.set(y2/4, 1);
-      const material = new THREE.MeshPhongMaterial({ map: roadTexture2 });
-      const roadObj = new THREE.Mesh(geometry, material);
-      roadObj.receiveShadow = true;
-      roadObj.position.set((x1 + x2) / 2, 0.05, (y1 + y2) / 2);
-      if(isHorizontal){
-        roadTexture2.repeat.set(1, y1/4);
-        roadObj.material.map = roadTexture;
+        material.map.center.set(0.5, 0.5);
+
+        if (isHorizontal) {
+          geometry = new THREE.BoxGeometry(length, 0.5, width);
+        } else {
+          geometry = new THREE.BoxGeometry(width, 0.5, length);
+          material.map.rotation = Math.PI / 2;
+        }
+
+        material.map.repeat.set(length / width, 1);
+        material.map.needsUpdate = true;
+
+        const roadObj = new THREE.Mesh(geometry, material);
+        roadObj.receiveShadow = true;
+        roadObj.position.set((x1 + x2) / 2, 0.05, (y1 + y2) / 2);
+        this.group.add(roadObj);
       }
-      this.group.add(roadObj);
     });
-
   }
 
 

@@ -28,6 +28,7 @@ async function init() {
   scene.background = new THREE.Color(0xe0e9f0);
 
   await initUI();
+  await loadAllModels();
 
   // camera settings
   const width = window.innerWidth;
@@ -37,7 +38,6 @@ async function init() {
   camera.lookAt(0, 0, 0);
 
   // load models
-  await loadAllModels();
 
   // lighting
   directionalLight = new THREE.DirectionalLight(0xfffffc, 3);
@@ -93,6 +93,7 @@ async function loadAllModels() {
   const gltf = await loadGLTF('./models/Buildings/buildings.glb');
 
   for (const b of buildings) {
+    
     const mesh = gltf.scene.getObjectByName(b.name);
     if (!mesh) {
       console.warn("No mesh named", b.name);
@@ -119,16 +120,11 @@ var resizeScene = function () {
 };
 
 async function initUI() {
-  const buildingSizeInput = document.getElementById("buildingSizeInput");
   const roadSizeInput = document.getElementById("roadSizeInput");
   const roadSizeDecayInput = document.getElementById("roadSizeDecayInput");
   const skyscraperHeightInput = document.getElementById("skyscraperHeightInput");
   const skyscraperChanceInput = document.getElementById("skyscraperChanceInput");
   const generateBtn = document.getElementById("generateBtn");
-
-  buildingSizeInput.addEventListener("input", (event) => {
-    maxBuildingSideLength = parseInt(event.target.value);
-  });
 
   roadSizeInput.addEventListener("input", (event) => {
     startingRoadWidth = parseInt(event.target.value);
