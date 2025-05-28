@@ -1,13 +1,19 @@
+import Intersection from "./Intersection";
 import Road from "./Road";
 
 class Block {
-  constructor(x, y, w, h) {
+  constructor(x, y, w, h, posXRoad, negXRoad, posYRoad, negYRoad) {
     this.x = x;
     this.y = y;
     this.w = w;
     this.h = h;
 
     this.roadDir = null;
+
+    this.posXRoad = posXRoad;
+    this.negXRoad = negXRoad;
+    this.posYRoad = posYRoad;
+    this.negYRoad = negYRoad;
   }
 
   isFinalSize(maxBuildingSideLength, maxAspectRatio) {
@@ -23,75 +29,121 @@ class Block {
   }
 
   Split(minSideLength, roadWidth) {
-    let blockResult, road;
+    let blockResult, road, intersections;
     const canSplitHorizontally = this.h > minSideLength * 2;
     const canSplitVertically = this.w > minSideLength * 2;
 
     if (canSplitHorizontally && canSplitVertically) {
       if (this.w > this.h) {
-        ({ blockResult, road } = this.splitVertically(minSideLength, roadWidth));
+        ({ blockResult, road, intersections } = this.split(false, minSideLength, roadWidth));
       } else {
-        ({ blockResult, road } = this.splitHorizontally(minSideLength, roadWidth));
+        ({ blockResult, road, intersections } = this.split(true, minSideLength, roadWidth));
       }
     } else if (canSplitHorizontally) {
-      ({ blockResult, road } = this.splitHorizontally(minSideLength, roadWidth));
+      ({ blockResult, road, intersections } = this.split(true, minSideLength, roadWidth));
     } else if (canSplitVertically) {
-      ({ blockResult, road } = this.splitVertically(minSideLength, roadWidth));
+      ({ blockResult, road, intersections } = this.split(false, minSideLength, roadWidth));
     } else {
       blockResult = [this];
       road = null;
+      intersections = null;
     }
 
-    return { blockResult, road };
+    return { blockResult, roadResult: road, intersectionsResult: intersections };
   }
 
-  splitHorizontally(minSideLength, roadWidth) {
+  split(isHorizontal, minSideLength, roadWidth) {
     const halfRoadWidth = roadWidth / 2;
-    const midpoint = this.h / 2;
-    const range = this.h - minSideLength * 2;
+
+    const totalLength = isHorizontal ? this.h : this.w;
+    const midpoint = totalLength / 2;
+    const range = totalLength - minSideLength * 2;
     const offset = randomRange(-range * 0.25, range * 0.25);
-    const h1 = Math.floor(midpoint + offset);
+    const splitPos = Math.floor(midpoint + offset);
 
-    const b1 = new Block(this.x, this.y, this.w, h1 - halfRoadWidth);
-    const b2 = new Block(this.x, this.y + h1 + halfRoadWidth, this.w, this.h - h1 - halfRoadWidth);
+    let b1, b2, road;
+    let intersections = []
 
-    if (b1.h < minSideLength || b2.h < minSideLength) {
-      return { blockResult: [this], road: null };
-    }
+    if (isHorizontal) {
+      road = new Road(this.x, this.y + splitPos, this.x + this.w, this.y + splitPos, roadWidth);
+      b1 = new Block(
+        this.x,
+        this.y,
+        this.w,
+        splitPos - halfRoadWidth,
+        this.posXRoad,
+        this.negXRoad,
+        road,
+        this.negYRoad
+      );
 
-    const road = new Road(this.x, this.y + h1, this.x + this.w, this.y + h1, roadWidth);
-    if (roadWidth > 0) {
-      b1.roadDir = 0;
-      b2.roadDir = 2;
+      b2 = new Block(
+        this.x,
+        this.y + splitPos + halfRoadWidth,
+        this.w,
+        this.h - splitPos - halfRoadWidth,
+        this.posXRoad,
+        this.negXRoad,
+        this.posYRoad,
+        road
+      );
+
+      this.negXRoad && intersections.push(new Intersection(this.x - this.negXRoad.width / 2, this.y + splitPos, [road, this.negXRoad]));
+      this.posXRoad && intersections.push(new Intersection(this.x + this.w + this.posXRoad.width / 2, this.y + splitPos, [road, this.posXRoad]));
     } else {
-      b1.roadDir = this.roadDir
+      road = new Road(this.x + splitPos, this.y, this.x + splitPos, this.y + this.h, roadWidth);
+      b1 = new Block(
+        this.x,
+        this.y,
+        splitPos - halfRoadWidth,
+        this.h,
+        road,
+        this.negXRoad,
+        this.posYRoad,
+        this.negYRoad
+      );
+
+      b2 = new Block(
+        this.x + splitPos + halfRoadWidth,
+        this.y,
+        this.w - splitPos - halfRoadWidth,
+        this.h,
+        this.posXRoad,
+        road,
+        this.posYRoad,
+        this.negYRoad
+      );
+
+      this.negYRoad && intersections.push(new Intersection(this.x + splitPos, this.y - this.negYRoad.width / 2, [road, this.negYRoad]));
+      this.posYRoad && intersections.push(new Intersection(this.x + splitPos, this.y + this.h + this.posYRoad.width / 2, [road, this.posYRoad]));
     }
-    return { blockResult: [b1, b2], road };
+
+    const tooSmall = isHorizontal ? (b1.h < minSideLength || b2.h < minSideLength)
+      : (b1.w < minSideLength || b2.w < minSideLength);
+
+    if (tooSmall) {
+      return { blockResult: [this], road: null, intersections: null };
+    }
+
+    [b1, b2].forEach(block => {
+      const roads = [
+        { dir: 0, road: block.negYRoad },
+        { dir: 1, road: block.posXRoad },
+        { dir: 2, road: block.negXRoad },
+        { dir: 3, road: block.posYRoad },
+      ];
+
+      let maxRoad = roads.reduce((max, curr) => {
+        if (curr.road && curr.road.width > (max.road?.width ?? -Infinity)) return curr;
+        return max;
+      }, { dir: null, road: null });
+
+      block.roadDir = maxRoad.dir !== null ? maxRoad.dir : this.roadDir;
+    });
+
+    return { blockResult: [b1, b2], road, intersections };
   }
 
-  splitVertically(minSideLength, roadWidth) {
-    const halfRoadWidth = roadWidth / 2;
-    const midpoint = this.w / 2;
-    const range = this.w - minSideLength * 2;
-    const offset = randomRange(-range * 0.25, range * 0.25);
-    const w1 = Math.floor(midpoint + offset);
-
-    const b1 = new Block(this.x, this.y, w1 - halfRoadWidth, this.h);
-    const b2 = new Block(this.x + w1 + halfRoadWidth, this.y, this.w - w1 - halfRoadWidth, this.h);
-
-    if (b1.w < minSideLength || b2.w < minSideLength) {
-      return { blockResult: [this], road: null };
-    }
-
-    const road = new Road(this.x + w1, this.y, this.x + w1, this.y + this.h, roadWidth);
-    if (roadWidth > 0) {
-      b1.roadDir = 1;
-      b2.roadDir = 3;
-    } else {
-      b1.roadDir = this.roadDir
-    }
-    return { blockResult: [b1, b2], road };
-  }
 }
 
 function randomRange(min, max) {

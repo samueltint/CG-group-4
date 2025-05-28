@@ -3,6 +3,7 @@ import * as THREE from "three";
 import BlockGenerator from "./Generation/BlockGenerator";
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import buildings from "./Generation/buildings";
+import cars from "./Generation/Car";
 
 var scene;
 var camera;
@@ -90,11 +91,11 @@ function loadGLTF(path) {
 }
 
 async function loadAllModels() {
-  const gltf = await loadGLTF('./models/Buildings/buildings.glb');
+  const buildingGltf = await loadGLTF('./models/Buildings/buildings.glb');
 
   for (const b of buildings) {
-    
-    const mesh = gltf.scene.getObjectByName(b.name);
+
+    const mesh = buildingGltf.scene.getObjectByName(b.name);
     if (!mesh) {
       console.warn("No mesh named", b.name);
       b.modelData = null;
@@ -102,6 +103,20 @@ async function loadAllModels() {
       b.modelData = mesh.clone(); // Clone to avoid sharing references if reused
     }
   }
+
+  const carGltf = await loadGLTF('./models/Cars/cars.glb');
+
+  for (const c of cars) {
+
+    const mesh = carGltf.scene.getObjectByName(c.name);
+    if (!mesh) {
+      console.warn("No mesh named", c.name);
+      c.modelData = null;
+    } else {
+      c.modelData = mesh.clone(); // Clone to avoid sharing references if reused
+    }
+  }
+
 }
 
 function animate() {

@@ -3,6 +3,7 @@ import Block from './Block.js';
 import BuildingGenerator from "./BuildingGenerator.js";
 import buildings from './buildings.js';
 import { randInt } from 'three/src/math/MathUtils.js';
+import Intersection from './Intersection.js';
 
 const textureLoader = new THREE.TextureLoader();
 const largeRoadTexture = textureLoader.load('./textures/road/largeRoad.jpg');
@@ -19,6 +20,7 @@ class BlockGenerator {
 
   blocks = [];
   roads = [];
+  intersections = []
   group = new THREE.Group();
 
   minSideLength = 10;
@@ -32,15 +34,17 @@ class BlockGenerator {
     this.roads = [];
 
     const rootBlock = new Block(0, 0, mapSize, mapSize);
-    const { blocks, roads } = this.GenerateBlocks(rootBlock, maxBuildingSideLength, startingRoadWidth, roadWidthDecay);
+    const { blocks, roads, intersections } = this.GenerateBlocks(rootBlock, maxBuildingSideLength, startingRoadWidth, roadWidthDecay);
     this.blocks = blocks;
     this.roads = roads;
+    this.intersections = intersections;
     this.PlaceObjects(mapSize, skyscraperChance, skyscraperHeight)
   }
 
   GenerateBlocks(initialBlock, maxBuildingSideLength, startingRoadWidth, roadWidthDecay) {
     let blocks = [initialBlock];
     let roads = [];
+    let intersections = [];
     let finished = false;
     let iteration = 0;
 
@@ -49,15 +53,19 @@ class BlockGenerator {
       const newBlocks = [];
 
       for (const block of blocks) {
-        let blockResult, road;
+        let blockResult, roadResult, intersectionsResult;
         let roadWidth = startingRoadWidth - roadWidthDecay * iteration;
         if (roadWidth < this.minRoadWidth) { roadWidth = 0 }
 
         if (!block.isFinalSize(maxBuildingSideLength, this.maxAspectRatio)) {
-          ({ blockResult, road } = block.Split(this.minSideLength, roadWidth));
+          ({ blockResult, roadResult, intersectionsResult } = block.Split(this.minSideLength, roadWidth));
           newBlocks.push(...blockResult);
-          if (road) {
-            roads.push(road);
+          intersectionsResult && intersectionsResult.forEach(intersection => {
+            intersection && pushUniqueIntersection(intersections, intersection);
+          })
+
+          if (roadResult) {
+            roads.push(roadResult);
           }
           finished = false;
         } else {
@@ -71,7 +79,7 @@ class BlockGenerator {
       iteration++;
     }
 
-    return { blocks, roads };
+    return { blocks, roads, intersections };
   }
 
   PlaceObjects(mapSize, skyscraperChance, skyscraperHeight) {
@@ -139,9 +147,17 @@ class BlockGenerator {
 
         const roadObj = new THREE.Mesh(geometry, material);
         roadObj.receiveShadow = true;
-        roadObj.position.set((x1 + x2) / 2, 0.05, (y1 + y2) / 2);
+        const center = road.getCenter();
+        roadObj.position.set(center.x - mapSize / 2, 0.05, center.y - mapSize / 2);
         this.group.add(roadObj);
       }
+
+    });
+    console.log(this.intersections)
+    this.intersections && this.intersections.forEach((intersection) => {
+      const axisHelper = new THREE.AxesHelper(2); // Size 2 units
+      axisHelper.position.set(intersection.x - mapSize / 2, 0, intersection.y - mapSize / 2);
+      this.group.add(axisHelper);
     });
   }
 
@@ -197,14 +213,34 @@ function moveBuilding(block, building, mapSize, effectiveWidth, effectiveDepth) 
       xCoord = block.x + block.w - mapSize / 2 - effectiveWidth / 2;
       break;
     case 2:
-      zCoord = block.y + block.h - mapSize / 2 - effectiveDepth / 2;
+      xCoord = block.x - mapSize / 2 + effectiveWidth / 2;
       break;
     case 3:
-      xCoord = block.x - mapSize / 2 + effectiveWidth / 2;
+      zCoord = block.y + block.h - mapSize / 2 - effectiveDepth / 2;
       break;
   }
 
   building.position.set(xCoord, 0, zCoord);
 }
+
+function pushUniqueIntersection(intersections, newIntersection) {
+  const threshold = 0.01;
+  const existing = intersections.find(existing => {
+    const dx = Math.abs(existing.x - newIntersection.x);
+    const dy = Math.abs(existing.y - newIntersection.y);
+    return dx < threshold && dy < threshold;
+  });
+
+  if (existing) {
+    newIntersection.roads.forEach(road => {
+      if (!existing.roads.includes(road)) {
+        existing.roads.push(road);
+      }
+    });
+  } else {
+    intersections.push(newIntersection);
+  }
+}
+
 
 export default BlockGenerator;

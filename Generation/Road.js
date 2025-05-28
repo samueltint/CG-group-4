@@ -6,6 +6,13 @@ class Road {
     this.y2 = y2;
     this.width = width;
   }
+
+  getCenter() {
+    return {
+      x: (this.x1 + this.x2) / 2,
+      y: (this.y1 + this.y2) / 2
+    };
+  }
 }
 
 export default Road
