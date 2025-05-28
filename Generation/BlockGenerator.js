@@ -2,8 +2,6 @@ import * as THREE from 'three';
 import Block from './Block.js';
 import BuildingGenerator from "./BuildingGenerator.js";
 import buildings from './buildings.js';
-import { randInt } from 'three/src/math/MathUtils.js';
-import Intersection from './Intersection.js';
 
 const textureLoader = new THREE.TextureLoader();
 const largeRoadTexture = textureLoader.load('./textures/road/largeRoad.jpg');
@@ -26,7 +24,7 @@ class BlockGenerator {
   minSideLength = 10;
   maxAspectRatio = 1.5;
   maxDepth = 30;
-  minRoadWidth = 1;
+  minRoadWidth = 3;
 
   Generate(mapSize, maxBuildingSideLength, startingRoadWidth, roadWidthDecay, skyscraperChance, skyscraperHeight) {
     this.group.clear();
@@ -85,7 +83,7 @@ class BlockGenerator {
   PlaceObjects(mapSize, skyscraperChance, skyscraperHeight) {
     this.blocks.forEach((block) => {
       const geometry = new THREE.BoxGeometry(block.w, 1, block.h);
-      const material = new THREE.MeshPhongMaterial({ color: 0x4A4545 });
+      const material = new THREE.MeshStandardMaterial({ color: 0x4A4545 });
       const blockObj = new THREE.Mesh(geometry, material);
 
       const xCoord = block.x + block.w / 2 - mapSize / 2;
@@ -125,7 +123,7 @@ class BlockGenerator {
         if (width <= 4) {
           material = asphaltMaterial.clone();
           material.map = asphaltMaterial.map.clone();
-        } else if (width <= 6) {
+        } else if (width <= 8) {
           material = smallRoadMaterial.clone();
           material.map = smallRoadMaterial.map.clone();
         } else {
@@ -136,9 +134,9 @@ class BlockGenerator {
         material.map.center.set(0.5, 0.5);
 
         if (isHorizontal) {
-          geometry = new THREE.BoxGeometry(length, 0.5, width);
+          geometry = new THREE.BoxGeometry(length, 0.1, width);
         } else {
-          geometry = new THREE.BoxGeometry(width, 0.5, length);
+          geometry = new THREE.BoxGeometry(width, 0.1, length);
           material.map.rotation = Math.PI / 2;
         }
 
@@ -148,17 +146,18 @@ class BlockGenerator {
         const roadObj = new THREE.Mesh(geometry, material);
         roadObj.receiveShadow = true;
         const center = road.getCenter();
-        roadObj.position.set(center.x - mapSize / 2, 0.05, center.y - mapSize / 2);
+        roadObj.position.set(center.x - mapSize / 2, 0.0, center.y - mapSize / 2);
         this.group.add(roadObj);
       }
 
     });
-    console.log(this.intersections)
-    this.intersections && this.intersections.forEach((intersection) => {
-      const axisHelper = new THREE.AxesHelper(2); // Size 2 units
-      axisHelper.position.set(intersection.x - mapSize / 2, 0, intersection.y - mapSize / 2);
-      this.group.add(axisHelper);
-    });
+
+    // //intersection helpers
+    // this.intersections && this.intersections.forEach((intersection) => {
+    //   const axisHelper = new THREE.AxesHelper(2); // Size 2 units
+    //   axisHelper.position.set(intersection.x - mapSize / 2, 0.5, intersection.y - mapSize / 2);
+    //   this.group.add(axisHelper);
+    // });
   }
 
 

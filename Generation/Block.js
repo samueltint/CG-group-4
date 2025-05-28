@@ -88,8 +88,27 @@ class Block {
         road
       );
 
-      this.negXRoad && intersections.push(new Intersection(this.x - this.negXRoad.width / 2, this.y + splitPos, [road, this.negXRoad]));
-      this.posXRoad && intersections.push(new Intersection(this.x + this.w + this.posXRoad.width / 2, this.y + splitPos, [road, this.posXRoad]));
+      if (this.negXRoad && road.width >= 3 && this.negXRoad.width >= 3) {
+        const intersection = new Intersection(
+          this.x - this.negXRoad.width / 2,
+          this.y + splitPos,
+          [road, this.negXRoad]
+        );
+        intersections.push(intersection);
+        road.intersections.push(intersection);
+        this.negXRoad.intersections.push(intersection);
+      }
+
+      if (this.posXRoad && road.width >= 3 && this.posXRoad.width >= 3) {
+        const intersection = new Intersection(
+          this.x + this.w + this.posXRoad.width / 2,
+          this.y + splitPos,
+          [road, this.posXRoad]
+        );
+        intersections.push(intersection);
+        road.intersections.push(intersection);
+        this.posXRoad.intersections.push(intersection);
+      }
     } else {
       road = new Road(this.x + splitPos, this.y, this.x + splitPos, this.y + this.h, roadWidth);
       b1 = new Block(
@@ -114,8 +133,27 @@ class Block {
         this.negYRoad
       );
 
-      this.negYRoad && intersections.push(new Intersection(this.x + splitPos, this.y - this.negYRoad.width / 2, [road, this.negYRoad]));
-      this.posYRoad && intersections.push(new Intersection(this.x + splitPos, this.y + this.h + this.posYRoad.width / 2, [road, this.posYRoad]));
+      if (this.negYRoad && road.width >= 3 && this.negYRoad.width >= 3) {
+        const intersection = new Intersection(
+          this.x + splitPos,
+          this.y - this.negYRoad.width / 2,
+          [road, this.negYRoad]
+        );
+        intersections.push(intersection);
+        road.intersections.push(intersection);
+        this.negYRoad.intersections.push(intersection);
+      }
+
+      if (this.posYRoad && road.width >= 3 && this.posYRoad.width >= 3) {
+        const intersection = new Intersection(
+          this.x + splitPos,
+          this.y + this.h + this.posYRoad.width / 2,
+          [road, this.posYRoad]
+        );
+        intersections.push(intersection);
+        road.intersections.push(intersection);
+        this.posYRoad.intersections.push(intersection);
+      }
     }
 
     const tooSmall = isHorizontal ? (b1.h < minSideLength || b2.h < minSideLength)

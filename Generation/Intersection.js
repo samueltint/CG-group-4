@@ -1,8 +1,8 @@
 class Intersection {
-  constructor(x, y) {
+  constructor(x, y, roads) {
     this.x = x;
     this.y = y;
-    this.roads = [];
+    this.roads = roads;
   }
 
   addRoad(road) {

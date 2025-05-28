@@ -1,9 +1,10 @@
-import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import BlockGenerator from "./Generation/BlockGenerator";
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import buildings from "./Generation/buildings";
-import cars from "./Generation/Car";
+import cars from "./Animation/Cars";
+import CarAnimator from "./Animation/CarAnimator";
 
 var scene;
 var camera;
@@ -11,10 +12,10 @@ var renderer;
 var controls;
 var directionalLight;
 var ambientLight;
+var carAnimator;
+var currentRoadMapMesh = null;
 
 var mapSize = 300;
-let currentRoadMapMesh = null;
-
 var maxBuildingSideLength = 10;
 var startingRoadWidth = 10;
 var roadWidthDecay = 1;
@@ -37,8 +38,6 @@ async function init() {
   camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
   camera.position.set(100, 60, 40);
   camera.lookAt(0, 0, 0);
-
-  // load models
 
   // lighting
   directionalLight = new THREE.DirectionalLight(0xfffffc, 3);
@@ -73,6 +72,9 @@ async function init() {
   currentRoadMapMesh = roadMap.getGroup();
   scene.add(currentRoadMapMesh);
 
+  carAnimator = new CarAnimator(scene, roadMap.intersections, mapSize);
+  carAnimator.spawnCars();
+
   window.addEventListener("resize", resizeScene);
   renderer.render(scene, camera);
   animate();
@@ -94,7 +96,6 @@ async function loadAllModels() {
   const buildingGltf = await loadGLTF('./models/Buildings/buildings.glb');
 
   for (const b of buildings) {
-
     const mesh = buildingGltf.scene.getObjectByName(b.name);
     if (!mesh) {
       console.warn("No mesh named", b.name);
@@ -122,6 +123,7 @@ async function loadAllModels() {
 function animate() {
   controls.update();
   renderer.render(scene, camera);
+  carAnimator.update();
   requestAnimationFrame(animate);
 }
 
@@ -158,9 +160,9 @@ async function initUI() {
   });
 
   generateBtn.addEventListener("click", () => {
+    // Remove old map
     if (currentRoadMapMesh) {
       scene.remove(currentRoadMapMesh);
-
       currentRoadMapMesh.traverse((child) => {
         if (child.isMesh) {
           child.geometry.dispose();
@@ -171,13 +173,17 @@ async function initUI() {
           }
         }
       });
-
     }
-    console.log(skyscraperChance)
+
+    carAnimator.clearCars();
+
     const roadMap = new BlockGenerator();
     roadMap.Generate(mapSize, maxBuildingSideLength, startingRoadWidth, roadWidthDecay, skyscraperChance, skyscraperHeight);
     currentRoadMapMesh = roadMap.getGroup();
     scene.add(currentRoadMapMesh);
+
+    carAnimator.setIntersections(roadMap.intersections);
+    carAnimator.spawnCars();
   });
 }
 
