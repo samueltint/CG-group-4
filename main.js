@@ -67,6 +67,40 @@ async function init() {
 
   controls = new OrbitControls(camera, renderer.domElement);
 
+  // Camera movement speed
+  const cameraMoveSpeed = 5;
+
+  // Keyboard camera controls
+  window.addEventListener('keydown', (event) => {
+    switch (event.key.toLowerCase()) {
+      case 'a': // Move up (increase z)
+        camera.position.z -= cameraMoveSpeed;
+        controls.target.z -= cameraMoveSpeed;
+        break;
+      case 'd': // Move down (decrease z)
+        camera.position.z += cameraMoveSpeed;
+        controls.target.z += cameraMoveSpeed;
+        break;
+      case 'w': // Move left (decrease x)
+        camera.position.x -= cameraMoveSpeed;
+        controls.target.x -= cameraMoveSpeed;
+        break;
+      case 's': // Move right (increase x)
+        camera.position.x += cameraMoveSpeed;
+        controls.target.x += cameraMoveSpeed;
+        break;
+      case 'q': // Move up (increase y)
+        camera.position.y += cameraMoveSpeed;
+        controls.target.y += cameraMoveSpeed;
+        break;
+      case 'e': // Move down (decrease y)
+        camera.position.y -= cameraMoveSpeed;
+        controls.target.y -= cameraMoveSpeed;
+        break;
+    }
+    controls.update();
+  });
+
   const roadMap = new BlockGenerator();
   roadMap.Generate(mapSize, maxBuildingSideLength, startingRoadWidth, roadWidthDecay, skyscraperChance, skyscraperHeight);
   currentRoadMapMesh = roadMap.getGroup();
