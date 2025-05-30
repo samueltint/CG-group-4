@@ -63,6 +63,7 @@ async function init() {
   renderer.setSize(width, height);
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.antialias = true;
   document.body.appendChild(renderer.domElement);
 
   controls = new OrbitControls(camera, renderer.domElement);
@@ -101,7 +102,7 @@ async function loadAllModels() {
       console.warn("No mesh named", b.name);
       b.modelData = null;
     } else {
-      b.modelData = mesh.clone(); // Clone to avoid sharing references if reused
+      b.modelData = mesh.clone(); 
     }
   }
 
@@ -114,7 +115,7 @@ async function loadAllModels() {
       console.warn("No mesh named", c.name);
       c.modelData = null;
     } else {
-      c.modelData = mesh.clone(); // Clone to avoid sharing references if reused
+      c.modelData = mesh.clone();
     }
   }
 

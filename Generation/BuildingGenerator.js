@@ -10,14 +10,14 @@ const facadeVariants = [1, 5, 6].map(num => {
     map: textureLoader.load(`./textures/Facades_${pad}_basecolor.jpg`),
     aoMap: textureLoader.load(`./textures/Facades_${pad}_ambientocclusion.jpg`),
     normalMap: textureLoader.load(`./textures/Facades_${pad}_normal.jpg`),
-    //roughnessMap: textureLoader.load(`./textures/Facades_${pad}_roughness.jpg`),
+    roughnessMap: textureLoader.load(`./textures/Facades_${pad}_roughness.jpg`),
     metalnessMap: textureLoader.load(`./textures/Facades_${pad}_metallic.jpg`),
   };
 
   Object.values(variant).forEach((map) => {
     map.wrapS = map.wrapT = THREE.RepeatWrapping;
     map.repeat.set(4, 6);
-    map.minFilter = THREE.LinearFilter;
+    map.minFilter = THREE.LinearMipmapLinearFilter;
     map.magFilter = THREE.LinearFilter;
   });
 
@@ -52,7 +52,7 @@ function createCube(w, h, d, color) {
     map: variant.map,
     aoMap: variant.aoMap,
     metalnessMap: variant.metalnessMap,
-    //roughnessMap: variant.roughnessMap,
+    roughnessMap: variant.roughnessMap,
     normalMap: variant.normalMap,
     color: randomColor,
   });
