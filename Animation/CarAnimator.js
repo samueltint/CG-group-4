@@ -3,16 +3,17 @@ import cars from './Cars';
 import Car from './Car';
 
 class CarAnimator {
-  constructor(scene, intersections, mapSize) {
+  constructor(scene, intersections, mapSize, carCount) {
     this.scene = scene;
     this.intersections = intersections;
     this.activeCars = [];
     this.clock = new THREE.Clock();
-    this.mapSize = mapSize
+    this.mapSize = mapSize;
+    this.carCount = carCount;
   }
 
   spawnCars() {
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < this.carCount; i++) {
       const wideRoadIntersections = this.intersections.filter(
         intersection => intersection.roads.some(road => road.width > 6)
       );
@@ -51,14 +52,18 @@ class CarAnimator {
   }
 
   clearCars() {
-    for (const car of this.cars) {
+    for (const car of this.activeCars) {
       this.scene.remove(car);
     }
-    this.cars = [];
+    this.activeCars = [];
   }
 
   setIntersections(newIntersections) {
     this.intersections = newIntersections;
+  }
+
+  setCarCount(newCarCount) {
+    this.carCount = newCarCount
   }
 }
 

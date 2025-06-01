@@ -21,6 +21,7 @@ var startingRoadWidth = 10;
 var roadWidthDecay = 1;
 var skyscraperHeight = 30
 var skyscraperChance = .3
+var carCount = 100
 
 init();
 
@@ -46,7 +47,7 @@ async function init() {
   directionalLight.shadow.bias = 0.0001;
   directionalLight.shadow.mapSize.set(8192, 8192);
   directionalLight.shadow.camera.near = 0.5;
-  directionalLight.shadow.camera.far = 500;
+  directionalLight.shadow.camera.far = 800;
   directionalLight.shadow.camera.left = -mapSize / 1.4;
   directionalLight.shadow.camera.right = mapSize / 1.4;
   directionalLight.shadow.camera.top = mapSize / 1.4;
@@ -73,7 +74,7 @@ async function init() {
   currentRoadMapMesh = roadMap.getGroup();
   scene.add(currentRoadMapMesh);
 
-  carAnimator = new CarAnimator(scene, roadMap.intersections, mapSize);
+  carAnimator = new CarAnimator(scene, roadMap.intersections, mapSize, carCount);
   carAnimator.spawnCars();
 
   window.addEventListener("resize", resizeScene);
@@ -102,7 +103,7 @@ async function loadAllModels() {
       console.warn("No mesh named", b.name);
       b.modelData = null;
     } else {
-      b.modelData = mesh.clone(); 
+      b.modelData = mesh.clone();
     }
   }
 
@@ -142,6 +143,7 @@ async function initUI() {
   const roadSizeDecayInput = document.getElementById("roadSizeDecayInput");
   const skyscraperHeightInput = document.getElementById("skyscraperHeightInput");
   const skyscraperChanceInput = document.getElementById("skyscraperChanceInput");
+  const carCountInput = document.getElementById("carsInput")
   const generateBtn = document.getElementById("generateBtn");
 
   roadSizeInput.addEventListener("input", (event) => {
@@ -159,6 +161,20 @@ async function initUI() {
   skyscraperHeightInput.addEventListener("input", (event) => {
     skyscraperHeight = parseInt(event.target.value);
   });
+
+  carCountInput.addEventListener("input", (event) => {
+    let value = parseInt(event.target.value);
+    if (isNaN(value)) {
+      value = 0;
+    } else if (value < 0) {
+      value = 0;
+    } else if (value > 300) {
+      value = 300;
+    }
+    event.target.value = value;
+    carAnimator.setCarCount(value);
+  });
+
 
   generateBtn.addEventListener("click", () => {
     // Remove old map
