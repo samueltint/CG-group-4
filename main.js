@@ -76,11 +76,11 @@ async function init() {
   // Keyboard camera controls
   window.addEventListener('keydown', (event) => {
     switch (event.key.toLowerCase()) {
-      case 'a': // Move up (increase z)
+      case 'd': // Move up (increase z)
         camera.position.z -= cameraMoveSpeed;
         controls.target.z -= cameraMoveSpeed;
         break;
-      case 'd': // Move down (decrease z)
+      case 'a': // Move down (decrease z)
         camera.position.z += cameraMoveSpeed;
         controls.target.z += cameraMoveSpeed;
         break;
