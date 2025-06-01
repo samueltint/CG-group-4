@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import Block from './Block.js';
 import BuildingGenerator from "./BuildingGenerator.js";
 import buildings from './buildings.js';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 // road textures
 const textureLoader = new THREE.TextureLoader();
@@ -41,16 +42,20 @@ class BlockGenerator {
   maxDepth = 30;
   minRoadWidth = 3;
 
-  Generate(mapSize, maxBuildingSideLength, startingRoadWidth, roadWidthDecay, skyscraperChance, skyscraperHeight) {
+  async Generate(mapSize, maxBuildingSideLength, startingRoadWidth, roadWidthDecay, skyscraperChance, skyscraperHeight) {
     this.group.clear();
     this.blocks = [];
     this.roads = [];
 
+    
     const rootBlock = new Block(0, 0, mapSize, mapSize);
     const { blocks, roads, intersections } = this.GenerateBlocks(rootBlock, maxBuildingSideLength, startingRoadWidth, roadWidthDecay);
     this.blocks = blocks;
     this.roads = roads;
     this.intersections = intersections;
+    
+    await waitUntilModelsReady();
+
     this.PlaceObjects(mapSize, skyscraperChance, skyscraperHeight)
   }
 
@@ -187,14 +192,51 @@ class BlockGenerator {
     // });
   }
 
-
   getGroup() {
     return this.group;
   }
 }
 
+// ensures models are loaded before attempting to build, encountered a repeating bug where objects wouldnt load because it was called before the models were loaded  
+async function waitUntilModelsReady() {
+  return new Promise((resolve) => {
+    const check = async () => {
+      console.log("check")
+      if (buildings[0].modelData !== null) {
+        resolve();
+      } else {
+        const buildingGltf = await loadGLTF('./models/Buildings/buildings.glb');
+        for (const b of buildings) {
+          const mesh = buildingGltf.scene.getObjectByName(b.name);
+          if (!mesh) {
+            console.warn("No mesh named", b.name);
+            b.modelData = null;
+          } else {
+            b.modelData = mesh.clone();
+          }
+        }
+        setTimeout(check, 100);
+      }
+    };
+    check();
+  });
+}
+
+function loadGLTF(path) {
+  const loader = new GLTFLoader();
+  return new Promise((resolve, reject) => {
+    loader.load(
+      path,
+      (gltf) => resolve(gltf),
+      null,
+      (err) => reject(err)
+    );
+  });
+}
+
 function LoadBuilding(blockW, blockH, x, z, roadDir) {
   for (const b of buildings) {
+    console.log(`load ${b.modelData}`)
     if (!b.modelData || Math.random < .1) continue;
 
     const temp = b.modelData.clone();

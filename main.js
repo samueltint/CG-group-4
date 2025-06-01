@@ -14,6 +14,7 @@ var directionalLight;
 var ambientLight;
 var carAnimator;
 var currentRoadMapMesh = null;
+var roadMap;
 
 var mapSize = 500;
 var maxBuildingSideLength = 10;
@@ -69,7 +70,7 @@ async function init() {
 
   controls = new OrbitControls(camera, renderer.domElement);
 
-  const roadMap = new BlockGenerator();
+  roadMap = new BlockGenerator();
   roadMap.Generate(mapSize, maxBuildingSideLength, startingRoadWidth, roadWidthDecay, skyscraperChance, skyscraperHeight);
   currentRoadMapMesh = roadMap.getGroup();
   scene.add(currentRoadMapMesh);
@@ -96,8 +97,10 @@ function loadGLTF(path) {
 
 async function loadAllModels() {
   const buildingGltf = await loadGLTF('./models/Buildings/buildings.glb');
+  console.log(buildings)
 
   for (const b of buildings) {
+    console.log("building " + b)
     const mesh = buildingGltf.scene.getObjectByName(b.name);
     if (!mesh) {
       console.warn("No mesh named", b.name);
@@ -193,8 +196,6 @@ async function initUI() {
     }
 
     carAnimator.clearCars();
-
-    const roadMap = new BlockGenerator();
     roadMap.Generate(mapSize, maxBuildingSideLength, startingRoadWidth, roadWidthDecay, skyscraperChance, skyscraperHeight);
     currentRoadMapMesh = roadMap.getGroup();
     scene.add(currentRoadMapMesh);
