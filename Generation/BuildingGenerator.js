@@ -3,9 +3,27 @@ import * as THREE from "three";
 
 // load textures
 const textureLoader = new THREE.TextureLoader();
-const buildingTexture = textureLoader.load('./textures/image.jpg');
-buildingTexture.wrapS = buildingTexture.wrapT = THREE.RepeatWrapping;
-buildingTexture.repeat.set(0.8, 0.1);
+
+const facadeVariants = [1, 5, 6].map(num => {
+  const pad = num.toString().padStart(2, '0');
+  const variant = {
+    map: textureLoader.load(`./textures/Facades_${pad}_basecolor.jpg`),
+    aoMap: textureLoader.load(`./textures/Facades_${pad}_ambientocclusion.jpg`),
+    normalMap: textureLoader.load(`./textures/Facades_${pad}_normal.jpg`),
+    roughnessMap: textureLoader.load(`./textures/Facades_${pad}_roughness.jpg`),
+    metalnessMap: textureLoader.load(`./textures/Facades_${pad}_metallic.jpg`),
+  };
+
+  Object.values(variant).forEach((map) => {
+    map.wrapS = map.wrapT = THREE.RepeatWrapping;
+    map.repeat.set(4, 6);
+    map.minFilter = THREE.LinearMipmapLinearFilter;
+    map.magFilter = THREE.LinearFilter;
+  });
+
+  return variant;
+});
+
 const buildingGap = 1;
 
 function getRandomColor() {
@@ -28,31 +46,35 @@ function getRandomColor() {
 
 function createCube(w, h, d, color) {
   const randomColor = getRandomColor();
-  const texturedMaterial = new THREE.MeshPhongMaterial({
-    map: buildingTexture,
+  const variant = facadeVariants[Math.floor(Math.random() * facadeVariants.length)];
+
+  const pbrMaterial = new THREE.MeshStandardMaterial({
+    map: variant.map,
+    aoMap: variant.aoMap,
+    metalnessMap: variant.metalnessMap,
+    roughnessMap: variant.roughnessMap,
+    normalMap: variant.normalMap,
     color: randomColor,
-    wireframe: false,
   });
 
-  const plainMaterial = new THREE.MeshPhongMaterial({
+  const plainMaterial = new THREE.MeshStandardMaterial({
     color: randomColor,
-    wireframe: false,
   });
 
   // textures per building face
   const materials = [
-    texturedMaterial, // right
-    texturedMaterial, // left
+    pbrMaterial, // right
+    pbrMaterial, // left
     plainMaterial,    // top (no texture)
     plainMaterial,    // bottom (no texture)
-    texturedMaterial, // front
-    texturedMaterial, // back
+    pbrMaterial, // front
+    pbrMaterial, // back
   ];
 
   const geometry = new THREE.BoxGeometry(w - buildingGap, h, d - buildingGap);
-
+  geometry.setAttribute('uv2', new THREE.BufferAttribute(geometry.attributes.uv.array, 2));
   // stop texture from strechiung too much
-  const repeatY = h / 2; // change texture scale
+  const repeatY = h / 12; // change texture scale
   const uvs = geometry.attributes.uv;
   for (let i = 0; i < uvs.count; i++) {
     const y = uvs.getY(i);
