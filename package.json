@@ -12,7 +12,6 @@
     "dependencies": {
         "@types/three": "^0.125.3",
         "CGLabs": "file:",
-        "simplex-noise": "^4.0.3",
         "three": "^0.174.0",
         "three-mtl-loader": "^1.0.2"
     },

@@ -201,7 +201,6 @@ class BlockGenerator {
 async function waitUntilModelsReady() {
   return new Promise((resolve) => {
     const check = async () => {
-      console.log("check")
       if (buildings[0].modelData !== null) {
         resolve();
       } else {
@@ -236,7 +235,6 @@ function loadGLTF(path) {
 
 function LoadBuilding(blockW, blockH, x, z, roadDir) {
   for (const b of buildings) {
-    console.log(`load ${b.modelData}`)
     if (!b.modelData || Math.random < .1) continue;
 
     const temp = b.modelData.clone();

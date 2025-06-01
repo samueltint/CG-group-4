@@ -131,10 +131,7 @@ function loadGLTF(path) {
 
 async function loadAllModels() {
   const buildingGltf = await loadGLTF('./models/Buildings/buildings.glb');
-  console.log(buildings)
-
   for (const b of buildings) {
-    console.log("building " + b)
     const mesh = buildingGltf.scene.getObjectByName(b.name);
     if (!mesh) {
       console.warn("No mesh named", b.name);

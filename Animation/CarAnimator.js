@@ -13,10 +13,10 @@ class CarAnimator {
   }
 
   spawnCars() {
-    for (let i = 0; i < this.carCount; i++) {
-      const wideRoadIntersections = this.intersections.filter(
-        intersection => intersection.roads.some(road => road.width > 6)
-      );
+    const wideRoadIntersections = this.intersections.filter(
+      intersection => intersection.roads.some(road => road.width > 6)
+    );
+    for (let i = 0; i < this.carCount && i < wideRoadIntersections.length; i++) {
 
       this.spawnCar(getRandomElement(wideRoadIntersections));
     }
@@ -39,35 +39,36 @@ class CarAnimator {
   update() {
     const delta = this.clock.getDelta();
     const halfMap = this.mapSize / 2;
-
     for (let i = this.activeCars.length - 1; i >= 0; i--) {
       const car = this.activeCars[i];
-      const dir = new THREE.Vector3(
-        car.nextIntersection.x - car.currentIntersection.x,
-        0,
-        car.nextIntersection.y - car.currentIntersection.y
-      ).normalize();
+      if (car.nextIntersection) {
+        const dir = new THREE.Vector3(
+          car.nextIntersection.x - car.currentIntersection.x,
+          0,
+          car.nextIntersection.y - car.currentIntersection.y
+        ).normalize();
 
-      const carObject = car.children[0];
-      const lookTarget = new THREE.Vector3().copy(car.position).add(dir);
-      carObject.lookAt(lookTarget);
-      car.translateOnAxis(dir, car.speed * delta);
+        const carObject = car.children[0];
+        const lookTarget = new THREE.Vector3().copy(car.position).add(dir);
+        carObject.lookAt(lookTarget);
+        car.translateOnAxis(dir, car.speed * delta);
 
-      const x = car.position.x;
-      const z = car.position.z;
-      if (x < -halfMap || x > halfMap || z < -halfMap || z > halfMap) {
-        this.scene.remove(car);
-        this.activeCars.splice(i, 1);
-        continue;
-      }
+        const x = car.position.x;
+        const z = car.position.z;
+        if (x < -halfMap || x > halfMap || z < -halfMap || z > halfMap) {
+          this.scene.remove(car);
+          this.activeCars.splice(i, 1);
+          continue;
+        }
 
-      const nextPos = new THREE.Vector3(
-        car.nextIntersection.x - halfMap,
-        0,
-        car.nextIntersection.y - halfMap
-      );
-      if (car.position.distanceTo(nextPos) < 0.1) {
-        car.selectNextIntersection();
+        const nextPos = new THREE.Vector3(
+          car.nextIntersection.x - halfMap,
+          0,
+          car.nextIntersection.y - halfMap
+        );
+        if (car.position.distanceTo(nextPos) < 0.1) {
+          car.selectNextIntersection();
+        }
       }
     }
   }
