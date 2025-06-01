@@ -3,6 +3,7 @@ import Block from './Block.js';
 import BuildingGenerator from "./BuildingGenerator.js";
 import buildings from './buildings.js';
 
+// road textures
 const textureLoader = new THREE.TextureLoader();
 const largeRoadTexture = textureLoader.load('./textures/road/largeRoad.jpg');
 const smallRoadTexture = textureLoader.load('./textures/road/smallRoad.jpg');
@@ -10,9 +11,23 @@ const asphaltTexture = textureLoader.load('./textures/road/asphalt.jpg');
 [largeRoadTexture, smallRoadTexture, asphaltTexture].forEach(tex => {
   tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
 });
-const largeRoadMaterial = new THREE.MeshPhongMaterial({ map: largeRoadTexture, wireframe: false });
-const smallRoadMaterial = new THREE.MeshPhongMaterial({ map: smallRoadTexture, wireframe: false });
-const asphaltMaterial = new THREE.MeshPhongMaterial({ map: asphaltTexture, wireframe: false });
+const largeRoadMaterial = new THREE.MeshStandardMaterial({ map: largeRoadTexture, wireframe: false });
+const smallRoadMaterial = new THREE.MeshStandardMaterial({ map: smallRoadTexture, wireframe: false });
+const asphaltMaterial = new THREE.MeshStandardMaterial({ map: asphaltTexture, wireframe: false });
+
+// sidewalk textures
+const sidewalkColorMap = textureLoader.load('./textures/sidewalk/asphalt_diff.jpg');
+const sidewalkNormalMap = textureLoader.load('./textures/sidewalk/asphalt_nor_dx.jpg');
+const sidewalkRoughnessMap = textureLoader.load('./textures/sidewalk/asphalt_rough.jpg');
+sidewalkColorMap.wrapS = sidewalkColorMap.wrapT = THREE.RepeatWrapping;
+sidewalkNormalMap.wrapS = sidewalkNormalMap.wrapT = THREE.RepeatWrapping;
+sidewalkRoughnessMap.wrapS = sidewalkRoughnessMap.wrapT = THREE.RepeatWrapping;
+const sidewalkMaterial = new THREE.MeshStandardMaterial({
+  map: sidewalkColorMap,
+  normalMap: sidewalkNormalMap,
+  roughnessMap: sidewalkRoughnessMap,
+  roughness: 1.0
+});
 
 class BlockGenerator {
 
@@ -81,9 +96,19 @@ class BlockGenerator {
   }
 
   PlaceObjects(mapSize, skyscraperChance, skyscraperHeight) {
+    // create buildings and sidewalks
     this.blocks.forEach((block) => {
-      const geometry = new THREE.BoxGeometry(block.w, 1, block.h);
-      const material = new THREE.MeshStandardMaterial({ color: 0x4A4545 });
+      // sidewalks
+      const geometry = new THREE.BoxGeometry(block.w, .3, block.h);
+      const material = sidewalkMaterial.clone();
+      material.map = sidewalkColorMap.clone();
+      material.normalMap = sidewalkNormalMap.clone();
+      material.roughnessMap = sidewalkRoughnessMap.clone();
+
+      const tileDensity = 2;
+      material.map.repeat.set(block.w / tileDensity, block.h / tileDensity);
+      material.normalMap.repeat.set(block.w / tileDensity, block.h / tileDensity);
+      material.roughnessMap.repeat.set(block.w / tileDensity, block.h / tileDensity);
       const blockObj = new THREE.Mesh(geometry, material);
 
       const xCoord = block.x + block.w / 2 - mapSize / 2;
@@ -93,6 +118,7 @@ class BlockGenerator {
       blockObj.receiveShadow = true;
       this.group.add(blockObj);
 
+      //buildings
       const loaded = LoadBuilding(block.w, block.h, xCoord, zCoord, block.roadDir);
       let building, effectiveWidth, effectiveDepth;
 
@@ -106,6 +132,7 @@ class BlockGenerator {
       this.group.add(building);
     });
 
+    //create roads
     this.roads.forEach((road) => {
       const width = road.width;
 

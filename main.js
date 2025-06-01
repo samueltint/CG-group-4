@@ -15,7 +15,7 @@ var ambientLight;
 var carAnimator;
 var currentRoadMapMesh = null;
 
-var mapSize = 300;
+var mapSize = 500;
 var maxBuildingSideLength = 10;
 var startingRoadWidth = 10;
 var roadWidthDecay = 1;
